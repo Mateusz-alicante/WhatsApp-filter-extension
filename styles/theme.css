@@ -1,0 +1,156 @@
+.checking-color {
+    border: 6px solid lightskyblue;
+}
+
+.checked-color {
+    border: 6px solid lightgreen;
+}
+
+.warning-color {
+    border: 6px solid lightsalmon;
+}
+
+.unsafe-color {
+    border: 6px solid red;
+}
+
+.unknown-color {
+    border: 6px solid lightgoldenrodyellow;
+}
+
+.safe-checker-alert-checking {
+    background-color: lightskyblue;
+}
+
+.safe-checker-alert-ok {
+    background-color: lightgreen;
+}
+
+.safe-checker-alert-warning {
+    background-color: lightsalmon;
+}
+
+.safe-checker-alert-unsafe {
+    background-color: red;
+}
+
+.safe-checker-alert-unknown {
+    background-color: lightgoldenrodyellow;
+}
+
+.safe-checker-alert-generic {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    padding: 0.3em;
+}
+
+.safe-checker-alert-generic p {
+    color: black;
+}
+
+.lds-ring {
+    display: inline-block;
+    position: relative;
+    width: 20px;
+    height: 20px;
+  }
+  .lds-ring div {
+    box-sizing: border-box;
+    display: block;
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    margin: 2px;
+    border: 2px solid #fff;
+    border-radius: 50%;
+    animation: lds-ring 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+    border-color: #fff transparent transparent transparent;
+  }
+  .lds-ring div:nth-child(1) {
+    animation-delay: -0.45s;
+  }
+  .lds-ring div:nth-child(2) {
+    animation-delay: -0.3s;
+  }
+  .lds-ring div:nth-child(3) {
+    animation-delay: -0.15s;
+  }
+  @keyframes lds-ring {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+
+#tick-mark {
+    position: relative;
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+}
+
+#tick-mark::before {
+    position: absolute;
+    left: 0;
+    top: 50%;
+    height: 50%;
+    width: 3px;
+    background-color: #002a54;
+    content: "";
+    transform: translateX(10px) rotate(-45deg);
+    transform-origin: left bottom;
+}
+
+#tick-mark::after {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    height: 3px;
+    width: 100%;
+    background-color: #002a54;
+    content: "";
+    transform: translateX(10px) rotate(-45deg);
+    transform-origin: left bottom;
+}
+
+.warning-sign {
+    color: black;
+    font-size: 30px;
+}
+
+.cross-sign {
+    color: black;
+    font-size: medium;
+    font-size: 35px;
+}
+
+.warning-message {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.warning-message p {
+    width: 75%;
+    color: orange;
+    align-self: center;
+    margin-top: 1em;
+}
+
+.warning-message button {
+    width: 30%;
+    color: white;
+    background-color: red;
+    padding: 0.5em;
+    margin: 1em 0;
+    border-radius: 1em;
+    align-self: center;
+}
+
+.warning-message button:hover {
+    transform: scale(1.2);
+    background-color: salmon;
+}

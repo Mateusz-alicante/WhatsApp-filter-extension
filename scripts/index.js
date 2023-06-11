@@ -1,5 +1,5 @@
 const env = {
-  BACKEDN_URL: "http://localhost:3000/",
+  BACKEDN_URL: "https://whatsapp-filter-backend-node.onrender.com",
 };
 
 let foundMessages = false;

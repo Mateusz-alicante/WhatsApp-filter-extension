@@ -154,3 +154,68 @@
     transform: scale(1.2);
     background-color: salmon;
 }
+
+.AppWrapperBlurred {
+    transition: all 0.5s ease;
+    filter: blur(1.5rem);
+}
+
+.password-query-container {
+    height: 100vh;
+    width: 100vw;
+    top: 0;
+    left: 0;
+    position: fixed;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.password-query-inner-container {
+    width: 40em;
+    height: 20em;
+    background-color: green;
+    border-radius: 1em;
+    position: relative;
+    padding: 2em;
+}
+
+.password-query-form-container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    justify-content: space-evenly;
+}
+
+.password-query-form-container h3 {
+    width: 100%;
+    font-size: xx-large;
+}
+
+.password-query-form-container input {
+    width: 75%;
+    margin: 0.5em auto;
+    height: 3em;
+    border-radius: 0.5em;
+    padding: 0.5em;
+    font-size: xx-large;
+}
+
+.password-query-form-container button {
+    width: 75%;
+    margin: 0.5em auto;
+    min-height: 4em;
+    border-radius: 0.5em;
+    padding: 0.1em;
+    font-size: xx-large;
+    background-color: black;
+    color: white
+
+}
+
+.password-query-form-container p {
+    padding: 1em;
+
+}

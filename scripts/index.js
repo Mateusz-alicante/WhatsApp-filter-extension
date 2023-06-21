@@ -1,22 +1,111 @@
 const env = {
-  BACKEDN_URL: "https://whatsapp-filter-backend-node.onrender.com",
+  // BACKEDN_URL: "https://whatsapp-filter-backend-node.onrender.com",
+  BACKEDN_URL: "http://localhost:3000/",
+};
+
+// Define a more efficent hashing function for strings
+String.prototype.hashCode = function () {
+  // from https://stackoverflow.com/questions/7616461/generate-a-hash-from-string-in-javascript
+  var hash = 0,
+    i,
+    chr;
+  if (this.length === 0) return hash;
+  for (i = 0; i < this.length; i++) {
+    chr = this.charCodeAt(i);
+    hash = (hash << 5) - hash + chr;
+    hash |= 0; // Convert to 32bit integer
+  }
+  return hash;
+};
+
+const validatePassword = (pass) => {
+  // Check if the lenght of the password is at least 12
+  if (pass.length < 12) return false;
+
+  // Check for different character classes in the password
+  const digitMatch = /[0-9]/.test(pass);
+  const upperMatch = /[A-Z]/.test(pass);
+  const lowerMatch = /[a-z]/.test(pass);
+  const specialMatch = /[^A-Za-z0-9]/.test(pass);
+
+  let satisfied = 0;
+  [digitMatch, upperMatch, lowerMatch, specialMatch].forEach((match) =>
+    match ? satisfied++ : null
+  );
+
+  // Make sure that the password contains at least 3 different character classes
+  if (satisfied < 3) return false;
+  else return true;
 };
 
 let foundMessages = false;
+let appLoaded = false;
+let logginingIn = false;
 
 const rootApp = document.getElementById("app");
 
-// Override default remove function to prevent Ract errors
 const ovveride = () => {
+  // Override default remove function to prevent Ract errors
   var s = document.createElement("script");
   s.src = chrome.runtime.getURL("scripts/override.js");
   s.onload = function () {
     this.remove();
   };
-  // see also "Dynamic values in the injected code" section in this answer
+
+  // append the scripts to the document
   (document.head || document.documentElement).appendChild(s);
 };
 ovveride();
+
+// Functions to handle blurring of the content before the user logs in
+const blurrApp = () => {
+  const appContainer = document.getElementsByClassName("app-wrapper-web")[0];
+  appContainer.classList.add("AppWrapperBlurred");
+};
+
+// Function to clean up when the user is sccessfully logged in. It removes the blur, and the password query
+const loginCleanup = () => {
+  const appContainer = document.getElementsByClassName("app-wrapper-web")[0];
+  appContainer.classList.remove("AppWrapperBlurred");
+
+  const loginContainer = document.getElementsByClassName(
+    "password-query-container"
+  )[0];
+  loginContainer.remove();
+  logginingIn = false;
+};
+
+// function for handling the password creation process once the application starts
+const createPasswordHandler = async (e) => {
+  e.preventDefault();
+  const inputValue = document.getElementsByClassName("password-form-input")[0]
+    .value;
+
+  if (!validatePassword(inputValue)) {
+    return alert(
+      "The password must contain at least 12 characters, and at least 3 of the following: uppercase, lowercase, digit, special character."
+    );
+  }
+  // Add a cookie that will be valid for 5 days
+  await saveObjectInLocalStorage({ password: inputValue.hashCode() });
+  alert(
+    "Password set correctly, proceed to app. If you want to reset your password, click on the extensjon icon."
+  );
+  loginCleanup();
+};
+
+// function for handling the login process once the application starts
+const LoginHandler = async (e) => {
+  e.preventDefault();
+  const inputValue = document.getElementsByClassName("password-form-input")[0]
+    .value;
+  const authCookie = await getObjectFromLocalStorage("password");
+  if (inputValue.hashCode() == authCookie) {
+    loginCleanup();
+  } else {
+    alert("Password incorrect, try again.");
+  }
+};
 
 // This function will take in a blob from the WhatsappWeb service and return a base64 encoded string
 function blobToBase64(blob) {
@@ -39,6 +128,54 @@ function htmlToElement(html) {
   template.innerHTML = html;
   return template.content.firstChild;
 }
+
+const addPasswordQuery = async () => {
+  // When app is fist loaded, blue the background, and create the password query
+
+  if (logginingIn) return;
+  logginingIn = true;
+  const authCookie = await getObjectFromLocalStorage("password");
+
+  blurrApp();
+
+  const outerContainer = document.createElement("div");
+  outerContainer.classList.add("password-query-container");
+
+  const innerContainer = document.createElement("div");
+  innerContainer.classList.add("password-query-inner-container");
+
+  const formContainer = document.createElement("form");
+  formContainer.classList.add("password-query-form-container");
+  formContainer.onsubmit = authCookie ? LoginHandler : createPasswordHandler;
+
+  const formTitle = document.createElement("h3");
+  formTitle.innerHTML = authCookie ? "Login:" : "Create a new passowrd:";
+
+  const formInput = document.createElement("input");
+  formInput.classList.add("password-form-input");
+  formInput.type = "password";
+
+  const formButton = document.createElement("button");
+  formButton.innerHTML = "Submit";
+  formButton.type = "submit";
+
+  formContainer.appendChild(formTitle);
+
+  if (!authCookie) {
+    const formText = document.createElement("p");
+    formText.innerHTML =
+      "The password must contain at least 12 characters, and at least 2 of the following: uppercase, lowercase, digit, special character.";
+    formContainer.appendChild(formText);
+  }
+
+  formContainer.appendChild(formInput);
+  formContainer.appendChild(formButton);
+
+  innerContainer.appendChild(formContainer);
+
+  outerContainer.appendChild(innerContainer);
+  document.getElementById("app").appendChild(outerContainer);
+};
 
 const addWarningMessage = (element) => {
   const content = element.getElementsByClassName("_1BOF7 _2AOIt")[0];
@@ -360,7 +497,6 @@ const MessageChangeObserver = new MutationObserver(() => {
 
         // Run relevant functions for the message type
         if (textAndImageMessage) {
-          console.log("found messge with image and text");
           handleImage(element);
         }
 
@@ -391,11 +527,28 @@ const ChatChangeObserver = new MutationObserver(() => {
 
 // create a new instance of `MutationObserver` named `observer`,
 // passing it a callback function
-const RootObserver = new MutationObserver(() => {
+const RootObserver = new MutationObserver(async () => {
   // First, we check if the message container is present in the website, and if that we have not already called the objective function
   if (rootApp.children[0].classList.contains("_1h2dM") && !foundMessages) {
     // If the message header is present, the messages in a specific chat are loaded
     const messageHeader = document.getElementsByClassName("_2Ts6i _2xAQV")[1];
+    const chatListHeader = document.querySelector(
+      '[data-testid="chatlist-header"]'
+    );
+
+    if (chatListHeader && !appLoaded) {
+      appLoaded = true;
+
+      chrome.runtime.sendMessage(
+        { requestPasswordPref: true },
+        function (response) {
+          if (response.passwordEnabled) {
+            addPasswordQuery();
+          }
+        }
+      );
+    }
+
     if (messageHeader) {
       // only run this onece per chat
       foundMessages = true;
@@ -412,3 +565,41 @@ const RootObserver = new MutationObserver(() => {
 // call `observe()` on that MutationObserver instance,
 // passing it the element to observe, and the options object
 RootObserver.observe(rootApp, { subtree: true, childList: true });
+
+/**
+ * Retrieve object from Chrome's Local StorageArea
+ * @param {string} key
+ */
+const getObjectFromLocalStorage = async function (key) {
+  return new Promise((resolve, reject) => {
+    try {
+      chrome.storage.local.get(key, function (value) {
+        resolve(value[key]);
+      });
+    } catch (ex) {
+      reject(ex);
+    }
+  });
+};
+
+/**
+ * Save Object in Chrome's Local StorageArea
+ * @param {*} obj
+ */
+const saveObjectInLocalStorage = async function (obj) {
+  return new Promise((resolve, reject) => {
+    try {
+      chrome.storage.local.set(obj, function () {
+        resolve();
+      });
+    } catch (ex) {
+      reject(ex);
+    }
+  });
+};
+
+chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
+  if (request.reloadWhatsAppWindow) {
+    addPasswordQuery();
+  }
+});

@@ -1,6 +1,6 @@
 const env = {
-  // BACKEDN_URL: "https://whatsapp-filter-backend-node.onrender.com",
-  BACKEDN_URL: "http://localhost:3000/",
+  BACKEDN_URL: "https://whatsapp-filter-backend-node.onrender.com",
+  // BACKEDN_URL: "http://localhost:3000/",
 };
 
 // Define a more efficent hashing function for strings
@@ -41,7 +41,7 @@ const validatePassword = (pass) => {
 let foundMessages = false;
 let appLoaded = false;
 let logginingIn = false;
-
+let progressStats = undefined;
 const rootApp = document.getElementById("app");
 
 const ovveride = () => {
@@ -75,6 +75,16 @@ const loginCleanup = () => {
   logginingIn = false;
 };
 
+const closeCodeMessageHandler = () => {
+  const appContainer = document.getElementsByClassName("app-wrapper-web")[0];
+  appContainer.classList.remove("AppWrapperBlurred");
+
+  const loginContainer = document.getElementsByClassName(
+    "password-query-container"
+  )[0];
+  loginContainer.remove();
+};
+
 // function for handling the password creation process once the application starts
 const createPasswordHandler = async (e) => {
   e.preventDefault();
@@ -92,6 +102,10 @@ const createPasswordHandler = async (e) => {
     "Password set correctly, proceed to app. If you want to reset your password, click on the extensjon icon."
   );
   loginCleanup();
+  if (!progressStats.createdPassword && !progressStats.progressComplete) {
+    progressStats.createdPassword = true;
+    updateProgessStats();
+  }
 };
 
 // function for handling the login process once the application starts
@@ -102,6 +116,13 @@ const LoginHandler = async (e) => {
   const authCookie = await getObjectFromLocalStorage("password");
   if (inputValue.hashCode() == authCookie) {
     loginCleanup();
+    if (
+      !progressStats.loggedInWithPassword &&
+      !progressStats.progressComplete
+    ) {
+      progressStats.loggedInWithPassword = true;
+      updateProgessStats();
+    }
   } else {
     alert("Password incorrect, try again.");
   }
@@ -196,6 +217,46 @@ const addWarningMessage = (element) => {
   };
   warningMessage.appendChild(button);
   content.parentElement.appendChild(warningMessage);
+};
+
+const addCodeMessage = () => {
+  blurrApp();
+
+  const outerContainer = document.createElement("div");
+  outerContainer.classList.add("password-query-container");
+
+  const innerContainer = document.createElement("div");
+  innerContainer.classList.add("password-query-inner-container");
+
+  const formContainer = document.createElement("form");
+  formContainer.classList.add("password-query-form-container");
+  formContainer.onsubmit = closeCodeMessageHandler;
+  const formTitle = document.createElement("h3");
+  formTitle.innerHTML = "Form progress completed!";
+
+  const formInput = document.createElement("input");
+  formInput.classList.add("password-form-input");
+  formInput.type = "text";
+  formInput.value = "ESROP2023";
+
+  const formButton = document.createElement("button");
+  formButton.innerHTML = "Close";
+  formButton.type = "submit";
+
+  formContainer.appendChild(formTitle);
+
+  const formText = document.createElement("p");
+  formText.innerHTML =
+    "You have completed the required porgress to complete the form. Copy the code provided below into your survey";
+  formContainer.appendChild(formText);
+
+  formContainer.appendChild(formInput);
+  formContainer.appendChild(formButton);
+
+  innerContainer.appendChild(formContainer);
+
+  outerContainer.appendChild(innerContainer);
+  document.getElementById("app").appendChild(outerContainer);
 };
 
 const setLoading = (element) => {
@@ -416,6 +477,10 @@ const checkSafety = async (text, image, element) => {
     } else {
       setToUnkown(messageContaier);
     }
+    if (!progressStats.progressComplete) {
+      progressStats.messagesChecked++;
+      updateProgessStats();
+    }
   } catch {
     // If the request fails, set the message style to unkown
     setToUnkown(messageContaier);
@@ -523,6 +588,11 @@ const ChatChangeObserver = new MutationObserver(() => {
     childList: true,
     subtree: false,
   });
+
+  if (!progressStats.progressComplete) {
+    progressStats.chatsVisited++;
+    updateProgessStats();
+  }
 });
 
 // create a new instance of `MutationObserver` named `observer`,
@@ -539,14 +609,23 @@ const RootObserver = new MutationObserver(async () => {
     if (chatListHeader && !appLoaded) {
       appLoaded = true;
 
-      chrome.runtime.sendMessage(
-        { requestPasswordPref: true },
-        function (response) {
-          if (response.passwordEnabled) {
-            addPasswordQuery();
-          }
-        }
+      const passwordEnabled = await getObjectFromLocalStorage(
+        "passwordEnabled"
       );
+      console.log("enabled", passwordEnabled);
+
+      if (passwordEnabled) {
+        addPasswordQuery();
+      }
+
+      // chrome.runtime.sendMessage(
+      //   { requestPasswordPref: true },
+      //   function (response) {
+      //     if (response.passwordEnabled) {
+      //       addPasswordQuery();
+      //     }
+      //   }
+      // );
     }
 
     if (messageHeader) {
@@ -598,8 +677,43 @@ const saveObjectInLocalStorage = async function (obj) {
   });
 };
 
+const setProgressStats = async (stats) => {
+  progressStats = await getObjectFromLocalStorage("progressStats");
+  if (!progressStats) {
+    progressStats = {
+      chatsVisited: 0,
+      messagesChecked: 0,
+      createdPassword: false,
+      loggedInWithPassword: false,
+      progressComplete: false,
+    };
+    saveObjectInLocalStorage({ progressStats });
+  }
+  console.log(progressStats);
+};
+
+const updateProgessStats = async () => {
+  await saveObjectInLocalStorage({ progressStats });
+  console.log(progressStats);
+
+  if (
+    progressStats.messagesChecked >= 20 &&
+    progressStats.chatsVisited >= 2 &&
+    progressStats.createdPassword &&
+    progressStats.loggedInWithPassword
+  ) {
+    progressStats.progressComplete = true;
+    await saveObjectInLocalStorage({ progressStats });
+    console.log("progress Complete");
+    addCodeMessage();
+  }
+};
+
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
   if (request.reloadWhatsAppWindow) {
+    console.log("receiving message");
     addPasswordQuery();
   }
 });
+
+setProgressStats();

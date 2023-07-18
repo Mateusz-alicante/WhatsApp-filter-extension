@@ -1,3 +1,5 @@
+const APIENDPOINT = "https://whatsapp-filter-backend-node.onrender.com";
+
 /**
  * Removes Object from Chrome Local StorageArea.
  *
@@ -47,9 +49,23 @@ const saveObjectInLocalStorage = async function (obj) {
   });
 };
 
-let passwordEnabled = true;
+const initPasswordEnabled = async function () {
+  const passwordEnabled = await getObjectFromLocalStorage("passwordEnabled");
+  if (!passwordEnabled) {
+    saveObjectInLocalStorage({ passwordEnabled: true });
+  } else {
+    saveObjectInLocalStorage({ passwordEnabled });
+  }
+};
 
-saveObjectInLocalStorage({ passwordEnabled });
+const initAPIEndpoint = async function () {
+  let endpoint = await getObjectFromLocalStorage("APIENDPOINT");
+  if (!endpoint) {
+    saveObjectInLocalStorage({ APIENDPOINT });
+  } else {
+    saveObjectInLocalStorage({ APIENDPOINT: endpoint });
+  }
+};
 
 function delay(time) {
   return new Promise((resolve) => setTimeout(resolve, time));
@@ -121,4 +137,4 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
   }
 });
 
-console.log("background.js loaded");
+console.log("background.js loaded", Date.now());

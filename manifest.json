@@ -1,36 +1,37 @@
 {
-    "manifest_version": 3,
-    "name": "Secure WhatsApp",
-    "version": "1.0",
-    "description": "Make WhatsApp more secure.",
-    "content_scripts": [{
-        "matches": ["https://web.whatsapp.com/"],
-        "js": ["scripts/index.js"],
-        "css": ["styles/theme.css"]
-    }],
-      "action": {
-        "default_icon": {
-          "16": "images/icon-16.png",
-          "32": "images/icon-32.png",
-          "48": "images/icon-48.png",
-          "128": "images/icon-128.png"
-        }
-      },
-        "permissions": ["activeTab", "storage", "tabs", "contextMenus"],
-        "web_accessible_resources": [{
-          "matches": ["<all_urls>"],
-          "resources": ["images/loading.png", "scripts/override.js"]
-      }],
-      "background": {
-        "service_worker": "scripts/background.js"
-      },
-      "externally_connectable": {
-        "ids": [
-          "*"
-        ],
-        "matches": [
-          "https://web.whatsapp.com/"
-        ],
-        "accepts_tls_channel_id": false
+  "manifest_version": 3,
+  "name": "Secure WhatsApp",
+  "version": "1.0",
+  "description": "Make WhatsApp more secure by analyzing the safety of incoming text and image messages.",
+  "content_scripts": [{
+      "matches": ["<all_urls>"],
+      "js": ["scripts/index.js"],
+      "css": ["styles/theme.css"]
+  }],
+    "action": {
+      "default_popup": "popup.html",
+      "default_icon": {
+        "16": "images/icon-16.png",
+        "32": "images/icon-32.png",
+        "48": "images/icon-48.png",
+        "128": "images/icon-128.png"
       }
+    },
+      "permissions": ["activeTab", "storage", "contextMenus"],
+      "web_accessible_resources": [{
+        "matches": ["<all_urls>"],
+        "resources": ["images/loading.png", "scripts/safeRemove.js"]
+    }],
+    "background": {
+      "service_worker": "scripts/background.js"
+    },
+    "externally_connectable": {
+      "ids": [
+        "*"
+      ],
+      "matches": [
+        "https://web.whatsapp.com/"
+      ],
+      "accepts_tls_channel_id": false
+    }
 }

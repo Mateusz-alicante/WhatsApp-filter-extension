@@ -2,7 +2,9 @@
 
 ## Installation
 
-In order to install the extension you will need to:
+The extension can be installed in Google Chrome Web Store
+
+In order to install the source code of the extension you will need to:
 
 1. clone this repository to your computer. Open your command prompt or terminal, and navigate to the folder where you would like to install the extension. Once there (make sure you have git), run:
 

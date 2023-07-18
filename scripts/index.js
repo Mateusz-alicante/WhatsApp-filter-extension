@@ -1,6 +1,5 @@
 const env = {
-  BACKEDN_URL: "https://whatsapp-filter-backend-node.onrender.com",
-  // BACKEDN_URL: "http://localhost:3000/",
+  BACKEDN_URL: "",
 };
 
 // Define a more efficent hashing function for strings
@@ -44,10 +43,10 @@ let logginingIn = false;
 let progressStats = undefined;
 const rootApp = document.getElementById("app");
 
-const ovveride = () => {
+const safeRemove = () => {
   // Override default remove function to prevent Ract errors
   var s = document.createElement("script");
-  s.src = chrome.runtime.getURL("scripts/override.js");
+  s.src = chrome.runtime.getURL("scripts/safeRemove.js");
   s.onload = function () {
     this.remove();
   };
@@ -55,7 +54,7 @@ const ovveride = () => {
   // append the scripts to the document
   (document.head || document.documentElement).appendChild(s);
 };
-ovveride();
+safeRemove();
 
 // Functions to handle blurring of the content before the user logs in
 const blurrApp = () => {
@@ -170,7 +169,7 @@ const addPasswordQuery = async () => {
   formContainer.onsubmit = authCookie ? LoginHandler : createPasswordHandler;
 
   const formTitle = document.createElement("h3");
-  formTitle.innerHTML = authCookie ? "Login:" : "Create a new passowrd:";
+  formTitle.innerHTML = authCookie ? "Login:" : "Create a new password:";
 
   const formInput = document.createElement("input");
   formInput.classList.add("password-form-input");
@@ -717,3 +716,10 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 });
 
 setProgressStats();
+
+const setEnv = async () => {
+  env.BACKEDN_URL = (await getObjectFromLocalStorage("APIENDPOINT")) || "";
+  console.log(env.BACKEDN_URL);
+};
+
+setEnv();

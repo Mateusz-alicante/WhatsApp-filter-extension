@@ -1,0 +1,38 @@
+<!doctype html>
+
+<html>
+  <head>
+    <title>Safe WhatsApp extension</title>
+    <style>
+      body {
+        font-family: "Segoe UI", "Lucida Grande", Tahoma, sans-serif;
+        font-size: 100%;
+      }
+      #status {
+        white-space: pre;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        max-width: 400px;
+      }
+    </style>
+
+    <!--
+      - JavaScript and HTML must be in separate files: see our Content Security
+      - Policy documentation[1] for details and explanation.
+      -
+      - [1]: https://developer.chrome.com/extensions/contentSecurityPolicy
+     -->
+
+  </head>
+  <body>
+    <div>
+        <h3>Safe WhatsApp</h3>
+        <p>Change API endpoint:</p>
+        <form id="changeEndpoint">
+          <input id="endpointInput" type="text" />
+          <button>Submit</button>
+        </form>
+    </div>
+  </body>
+  <script src="popup.js"></script>
+</html>

@@ -608,9 +608,12 @@ const RootObserver = new MutationObserver(async () => {
     if (chatListHeader && !appLoaded) {
       appLoaded = true;
 
-      const passwordEnabled = await getObjectFromLocalStorage(
-        "passwordEnabled"
-      );
+      let passwordEnabled = await getObjectFromLocalStorage("passwordEnabled");
+
+      if (passwordEnabled == undefined) {
+        passwordEnabled = true;
+      }
+
       console.log("enabled", passwordEnabled);
 
       if (passwordEnabled) {
@@ -718,7 +721,10 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 setProgressStats();
 
 const setEnv = async () => {
-  env.BACKEDN_URL = (await getObjectFromLocalStorage("APIENDPOINT")) || "";
+  env.BACKEDN_URL = await getObjectFromLocalStorage("APIENDPOINT");
+  if (env.BACKEDN_URL == undefined) {
+    console.log("could not find env variable");
+  }
   console.log(env.BACKEDN_URL);
 };
 

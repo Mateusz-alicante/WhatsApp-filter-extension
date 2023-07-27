@@ -71,6 +71,33 @@ function delay(time) {
   return new Promise((resolve) => setTimeout(resolve, time));
 }
 
+initAPIEndpoint();
+initPasswordEnabled();
+
+chrome.runtime.onInstalled.addListener(function () {
+  try {
+    chrome.contextMenus.create({
+      id: "togglePassword",
+      title: "Password Protection",
+      contexts: ["action"],
+      type: "checkbox",
+      checked: true,
+    });
+    chrome.contextMenus.create({
+      id: "resetFormProgress",
+      title: "Reset form progress",
+      contexts: ["action"],
+    });
+    chrome.contextMenus.create({
+      id: "resetPassword",
+      title: "Reset password",
+      contexts: ["action"],
+    });
+  } catch (e) {
+    console.log(e);
+  }
+});
+
 chrome.action.onClicked.addListener(async function (tab) {
   removeObjectFromLocalStorage("password");
   console.log("password reset");
@@ -95,28 +122,6 @@ chrome.tabs.onActivated.addListener((e) => {
   });
 });
 
-try {
-  chrome.contextMenus.create({
-    id: "togglePassword",
-    title: "Password Protection",
-    contexts: ["action"],
-    type: "checkbox",
-    checked: true,
-  });
-  chrome.contextMenus.create({
-    id: "resetFormProgress",
-    title: "Reset form progress",
-    contexts: ["action"],
-  });
-  chrome.contextMenus.create({
-    id: "resetPassword",
-    title: "Reset password",
-    contexts: ["action"],
-  });
-} catch (e) {
-  console.log(e);
-}
-
 chrome.contextMenus.onClicked.addListener(function (info, tab) {
   if (info.menuItemId == "togglePassword") {
     passwordEnabled = info.checked;
@@ -136,5 +141,3 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     sendResponse({ passwordEnabled });
   }
 });
-
-console.log("background.js loaded", Date.now());

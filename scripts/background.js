@@ -1,5 +1,5 @@
 const APIENDPOINT = "https://whatsapp-filter-backend-node.onrender.com";
-
+let passwordEnabled = true;
 /**
  * Removes Object from Chrome Local StorageArea.
  *
@@ -50,7 +50,7 @@ const saveObjectInLocalStorage = async function (obj) {
 };
 
 const initPasswordEnabled = async function () {
-  const passwordEnabled = await getObjectFromLocalStorage("passwordEnabled");
+  passwordEnabled = await getObjectFromLocalStorage("passwordEnabled");
   if (!passwordEnabled) {
     saveObjectInLocalStorage({ passwordEnabled: true });
   } else {

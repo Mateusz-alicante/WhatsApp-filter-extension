@@ -1,5 +1,5 @@
 const env = {
-  BACKEDN_URL: "",
+  BACKEDN_URL: "http://localhost:3000/",
 };
 
 // Define a more efficent hashing function for strings
@@ -430,6 +430,7 @@ const registerMessage = async (element) => {
   const textContainer = element.getElementsByClassName(
     "_11JPr selectable-text copyable-text"
   )[0];
+  console.log("resistering message: ", element, textContainer);
   const text = textContainer.children[0].innerHTML;
   checkSafety(text, null, element);
 };
@@ -438,10 +439,15 @@ const checkSafety = async (text, image, element) => {
   // This function will send a request to the backend to check the safety of the message
 
   // select the message container of the current message. Styles will be added to this contianer
-  const messageContaier = element.querySelector(
-    '[data-testid="msg-container"]'
-  );
+  // const messageContaier = element.querySelector(
+  //   '[data-testid="msg-container"]'
+  // );
 
+  const messageContaier =
+    element.querySelector('[class="UzMP7 _1uv-a"]') ||
+    element.querySelector('[class="UzMP7 _1uv-a _3m5cz"]');
+
+  // console.log(messageContaier);
   // Set the message style to loading
   setLoading(messageContaier);
 
@@ -573,7 +579,7 @@ const MessageChangeObserver = new MutationObserver(() => {
 const ChatChangeObserver = new MutationObserver(() => {
   // Here we will observe the chat list container (on the left), and the message container (on the right) for a specifc chat
   // We want to check new messages for safety in both of these cases
-  const chatContainer = document.querySelector('[data-testid="chat-list"]');
+  const chatContainer = document.querySelector('[aria-label="Chat list"]');
   const messageContaier = document.querySelector('[role="application"]');
 
   // This will run not only when a new chat is selected, but also when the user hovers over different chats,
@@ -601,9 +607,7 @@ const RootObserver = new MutationObserver(async () => {
   if (rootApp.children[0].classList.contains("_1h2dM") && !foundMessages) {
     // If the message header is present, the messages in a specific chat are loaded
     const messageHeader = document.getElementsByClassName("_2Ts6i _2xAQV")[1];
-    const chatListHeader = document.querySelector(
-      '[data-testid="chatlist-header"]'
-    );
+    const chatListHeader = document.getElementsByClassName("_3WByx")[0];
 
     if (chatListHeader && !appLoaded) {
       appLoaded = true;
